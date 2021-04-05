@@ -1,7 +1,9 @@
 from random import *
 import numpy as np
 import criterions as сr
+import time
 
+start_time=time.time()
 def nearest(arr, num):
     return arr.index(min(arr, key=lambda x: abs(x - num)))
 
@@ -115,3 +117,6 @@ if Fp > Ft:
     print("Рівняння регресії неадекватне оригіналу (Fp > Ft)")
 else:
     print("Рівняння регресії адекватне оригіналу (Fp < Ft)")
+
+stop = time.time()
+print("\nЧас виконання програми: " + str(stop-start_time))
