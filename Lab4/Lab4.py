@@ -71,6 +71,7 @@ norm_bi = [m_ij(yi),
            m_ij(yi*natural_x1*natural_x2*natural_x3)]
 
 def cochran_cr(m, N, y_table):
+    global gt, gp
     print("Перевірка рівномірності дисперсій за критерієм Кохрена: ")
     y_variations = [np.var(i) for i in y_table]
     max_y_variation = max(y_variations)
@@ -168,12 +169,26 @@ def Student_val(f3, q):
 def Fisher_val(f3,f4, q):
     return Decimal(abs(f.isf(q,f4,f3))).quantize(Decimal('.0001')).__float__()
 
+disp = []
+for i in range(100):
+    while not cochran_cr(M, 4, y_arr):
+        M += 1
+        y_table = [[randint(y_min, y_max) for _ in range(M)] for j in range(N)]
+    print("Матриця планування:")
+    labels_table = list(map(lambda x: x.ljust(6),
+                            ["x1", "x2", "x3", "x12", "x13", "x23", "x123"] + ["y{}".format(i + 1) for i in range(M)]))
+    rows_table = [list(var_factor_table[i]) + list(y_arr[i]) for i in range(N)]
+    rows_normalized_table = [var_factor_table[i] + list(y_arr[i]) for i in range(N)]
+    print((" ").join(labels_table))
+    print("\n".join([" ".join(map(lambda j: "{:<+6}".format(j), rows_table[i])) for i in range(len(rows_table))]))
+    print("\t")
+    norm_factors_table_zero_factor = [[+1]+i for i in norm_factor_table]
+    importance = student_criteria(M, N, y_arr , norm_factors_table_zero_factor)
 
-while not cochran_cr(M, 4, y_arr):
-    M += 1
-    y_table = [[randint(y_min, y_max) for _ in range(M)] for j in range(N)]
+    global gt, gp
+    if gp < gt:
+        disp.append('')
 
-norm_factors_table_zero_factor = [[+1]+i for i in norm_factor_table]
-importance = student_criteria(M, N, y_arr , norm_factors_table_zero_factor)
+    fisher_criteria(M, N, 1, var_factor_table, y_arr, natural_bi, importance)
 
-fisher_criteria(M, N, 1, var_factor_table, y_arr, natural_bi, importance)
+print('\nК-сть однорідних дисперсій: ' + str(len(disp)))
