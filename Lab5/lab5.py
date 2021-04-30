@@ -107,7 +107,15 @@ def student_criteria(m, N, y_table, beta_coefficients):
     print(*to_print, sep="; ")
     equation = " ".join(["".join(i) for i in zip(list(map(lambda x: "{:+.2f}".format(x), betas_to_print)),x_i_names)])
     print("Рівняння регресії без незначимих членів: y = " + equation)
-    return importance
+
+    #ДОДАТКОВЕ ЗАВДАННЯ: виведіть рівняння яке б складалось тільки із не значимих коефіцієнтів
+    not_importance = [True if el < t else False for el in list(t_i)]
+    b_to_print = list(compress(beta_coefficients, not_importance))
+    xx_i_names = list(compress(["", "x1", "x2", "x3", "x12", "x13", "x23", "x123", "x1^2", "x2^2", "x3^2"], not_importance))
+    eq = " ".join(["".join(i) for i in zip(list(map(lambda x: "{:+.2f}".format(x), b_to_print)),xx_i_names)])
+    print("\nРівняння регресії із незначимих членів: y = " + eq)
+    return importance, not_importance
+
 
 
 def calculate_theoretical_y(x_table, b_coefficients, importance):
