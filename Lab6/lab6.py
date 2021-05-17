@@ -5,6 +5,7 @@ from scipy.stats import f, t
 import numpy
 from itertools import compress
 from functools import reduce
+import time
 
 xmin = [-15, 25, -15]
 xmax = [30, 65, -5]
@@ -105,6 +106,8 @@ def find_coefficients(factors, y_vals):
 
 
 def cochran_criteria(m, N, y_table):
+    start_cochrane = time.time()
+
     def get_cochran_value(f1, f2, q):
         partResult1 = q / f2
         params = [partResult1, f1, (f2 - 1) * f1]
@@ -121,16 +124,20 @@ def cochran_criteria(m, N, y_table):
     p = 0.95
     q = 1 - p
     gt = get_cochran_value(f1, f2, q)
+    stop = time.time()
     print("Gp = {}; Gt = {}; f1 = {}; f2 = {}; q = {:.2f}".format(gp, gt, f1, f2, q))
     if gp < gt:
         print("Gp < Gt => дисперсії рівномірні => все правильно")
+        print("Час виконання критерія Кохрена:" + str(stop - start_cochrane))
+
         return True
     else:
         print("Gp > Gt => дисперсії нерівномірні => змінюємо значення m")
         return False
 
-
 def student_criteria(m, N, y_table, beta_coefficients):
+    start_student = time.time()
+
     def get_student_value(f3, q):
         return Decimal(abs(t.ppf(q / 2, f3))).quantize(Decimal('.0001')).__float__()
 
@@ -143,7 +150,6 @@ def student_criteria(m, N, y_table, beta_coefficients):
     q = 0.05
     t_our = get_student_value(f3, q)
     importance = [True if el > t_our else False for el in list(t_i)]
-
     print("Оцінки коефіцієнтів βs: " + ", ".join(list(map(lambda x: str(round(float(x), 3)), beta_coefficients))))
     print("Коефіцієнти ts: " + ", ".join(list(map(lambda i: "{:.2f}".format(i), t_i))))
     print("f3 = {}; q = {}; tтабл = {}".format(f3, q, t_our))
@@ -152,10 +158,14 @@ def student_criteria(m, N, y_table, beta_coefficients):
     to_print = map(lambda x: x[0] + " " + x[1], zip(beta_i, importance_to_print))
     print(*to_print, sep="; ")
     print_equation(beta_coefficients, importance)
+    stop = time.time()
+    print("Час виконання критерія Стьюдента:" + str(stop - start_student))
     return importance
 
 
 def fisher_criteria(m, N, d, x_table, y_table, b_coefficients, importance):
+    start_fisher = time.time()
+
     def get_fisher_value(f3, f4, q):
         return Decimal(abs(f.isf(q, f4, f3))).quantize(Decimal('.0001')).__float__()
 
@@ -176,6 +186,8 @@ def fisher_criteria(m, N, d, x_table, y_table, b_coefficients, importance):
     print("\n".join(["{arr[0]}: y = {arr[1]}".format(arr=el) for el in theoretical_values_to_print]))
     print("Fp = {}, Ft = {}".format(f_p, f_t))
     print("Fp < Ft => модель адекватна" if f_p < f_t else "Fp > Ft => модель неадекватна")
+    stop = time.time()
+    print("Час виконання критерія Фішера:" + str(stop - start_fisher))
     return True if f_p < f_t else False
 
 
